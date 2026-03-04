@@ -60,13 +60,13 @@ Some sections are still under construction — **you can help complete them!**
     <h3>🚀 DevOps & Automation</h3>
     <p>Docker, CI/CD, Ansible, scripts</p>
   </a>
+<a href="./embedded/" class="section-tile">
+    <h3>⚡ Embedded Linux</h3>
+    <p>Bootloaders, kernel configs, low-level tools</p>
+  </a>
   <a href="./issues/" class="section-tile">
     <h3>🧯 Common Issues & Fixes</h3>
     <p>Real-world problems & solutions</p>
-  </a>
-  <a href="./embedded/" class="section-tile">
-    <h3>⚡ Embedded Linux</h3>
-    <p>Bootloaders, kernel configs, low-level tools</p>
   </a>
 </div>
 

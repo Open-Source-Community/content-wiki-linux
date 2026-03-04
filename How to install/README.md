@@ -1,1 +1,1 @@
-# Text PRoccsing
+In this section we explain, How we can install somethings maybe difficult. 
