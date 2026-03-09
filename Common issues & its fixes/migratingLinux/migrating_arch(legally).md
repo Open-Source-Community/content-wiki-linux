@@ -60,7 +60,7 @@ But how do we partition the disk? with a tool called fdisk.<br><br><br>
 
 
 <a id="setting-up-the-esp"></a>
-# 2.1 Setting up the ESP (not the one used in IoT)
+# 2.1 Setting up the ESP
 ESP -which stands for "EFI System Partition"- is the partition where we will install the bootloader (more on that in section: [#Reinstalling the bootloader](#reinstalling-the-bootloader)) and other files required for booting, It is recommended to make the partition **1 GiB** in size to ensure it has adequate space for multiple kernels or unified kernel images, a boot loader, firmware updates files and any other operating system or OEM files. If still in doubt, 4 GiB ought to be enough for anybody.<br>
 Note: some firmware expects the ESP to be first partition so do that to be safe.<br>
 To create the partition run and give it the type 'EFI System':
