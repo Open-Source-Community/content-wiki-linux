@@ -24,7 +24,7 @@ And that is exactly the problem Ventoy solves.
 ## 0.1 Notes
 
 - You can see which ISO files where tested with Venoty [here](https://www.ventoy.net/en/isolist.html).
-- If an ISO file you want to use isn't supported yet don't lose hope; the projects gets updated frequently and with each update more ISO files are supported. To update Ventoy on your USB stick (let's say sdb) run: ``` ventoy -u /dev/sdb ```. Updating Ventoy doesn't affect the ISO files aready installed.
+- If an ISO file you want to use isn't supported yet don't lose hope; the project gets updated frequently and with each update more ISO files are supported. To update Ventoy on your USB stick (let's say sdb) run: ``` ventoy -u /dev/sdb ```. Updating Ventoy doesn't affect the ISO files already installed.
 
 # 1 Installing the Ventoy package
 
