@@ -7,6 +7,4 @@ tags:
   - system backup
 ---
 
-## Clonezilla
-
-In this section we learn how to install and do a full-system clone using Clonezilla.
+*Clone*zilla is a user-friendly tool for disk *cloning*. In this guide you will learn what is disk cloning, how to install and use Clonezilla.
