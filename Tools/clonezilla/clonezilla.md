@@ -82,52 +82,52 @@ You can use Etcher to flash the ISO file to the USB or better yet, you can use V
 ## 3 How to do a full-system backup using Clonezilla
 
 Shutdown your computer and boot Clonezilla from the bootable USB. First thing you'll see is this:<br>
-![Clonezilla boot menu](../../imgs/clonezilla/bootmenu.png)
+![Clonezilla boot menu](imgs/clonezilla/bootmenu.png)
 Select the first option: Clonezilla live (VGA 800x600)<br>
 You will see the Debian booting process (fun fact: Clonezilla is based on Debian).<br><br>
 
 Then you will be prompted to choose a language:<br>
-![language select](../../imgs/clonezilla/lang.png)<br>
+![language select](imgs/clonezilla/lang.png)<br>
 Pick any language you like. this guide will use English.<br><br>
 
 After that you will have the option to change or keep the keyboard layout:<br>
-![keyboard layout select](../../imgs/clonezilla/keymap.png)<br>
+![keyboard layout select](imgs/clonezilla/keymap.png)<br>
 This guide will use the default layout (US keyboard)<br><br>
 
 Then you can choose whether to start clonezilla or enter the command line:
-![start clonezilla](../../imgs/clonezilla/start-clonezilla.png)<br>
+![start clonezilla](imgs/clonezilla/start-clonezilla.png)<br>
 Select Start_Clonezilla.<br>
 <br>
 
 Upon starting Clonezilla, you will be prompted to select the type of operation you want to perform.
-![operations](../../imgs/clonezilla/device-device-clone.png)<br>
+![operations](imgs/clonezilla/device-device-clone.png)<br>
 For this guide we will select device-device.<br><br>
 
 When you see this screen:<br>
-![disk to disk clone](../../imgs/clonezilla/disk-to-local-disk-clone.png)<br>
+![disk to disk clone](imgs/clonezilla/disk-to-local-disk-clone.png)<br>
 Select disk_to_local_disk_clone unless you want to just clone a single partition.<br><br>
 
 You will now see this screen prompting you to choose which mode to run:<br>
-![mode select](../../imgs/clonezilla/beginner-expert-mode.png)<br>
+![mode select](imgs/clonezilla/beginner-expert-mode.png)<br>
 Select Beginner (unless you want to set certain advanced parameters which I won't cover in this article).<br><br>
 
 When you see this screen:<br>
-![source disk](../../imgs/clonezilla/source-disk.png)<br>
+![source disk](imgs/clonezilla/source-disk.png)<br>
 Press Space on the disk you want to clone then press Enter.<br><br>
 
 Then select the target disk and press enter:
-![target disk](../../imgs/clonezilla/target-disk.png)<br><br>
+![target disk](imgs/clonezilla/target-disk.png)<br><br>
 
 Choose whether to check the source file system:<br>
-![source filesystem needs to be checked?](../../imgs/clonezilla/fsck-src-fs.png)<br>
+![source filesystem needs to be checked?](imgs/clonezilla/fsck-src-fs.png)<br>
 Usually you want to skip checking. If that is the case select sfsck.<br><br>
 
 Choose whether to scale to scale the partition table proportionally with the destination disk's storage:<br>
-![partition table settings](../../imgs/clonezilla/fdisk-k.png)<br>
+![partition table settings](imgs/clonezilla/fdisk-k.png)<br>
 Usually you want to select k1 but personally I like to select k0 to have empty unpartitioned space on my target disk because my target disk has a large amount of storage and I don't want to waste it all.<br><br>
 
 Select what you want the system to do after the cloning is done:<br>
-![postrun](../../imgs/clonezilla/postrun.png)<br><br>
+![postrun](imgs/clonezilla/postrun.png)<br><br>
 
 Follow the on-screen instructions and warnings.<br>
 It will take some time to finish cloning and when it is done, you can use the cloned disk as a backup or swap it into another machine and boot straight into your system with zero setup required.
