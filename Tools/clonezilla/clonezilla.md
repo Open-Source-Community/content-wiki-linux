@@ -7,11 +7,7 @@ tags:
   - system backup
 ---
 
-# Clonezilla
-
-The Free and Open Source Software for Disk Imaging and Cloning<br><br>
-
-# Table of contents:
+## Table of contents:
 
 - [1 What is Clonezilla](#1-what-is-clonezilla)<br>
   - [1.1 Why use Clonezilla](#11-why-use-clonezilla)
@@ -21,29 +17,28 @@ The Free and Open Source Software for Disk Imaging and Cloning<br><br>
   - [2.2 Making a bootable USB](#22-making-a-bootable-usb)
 - [3 How to do a full-system backup using Clonezilla](#3-how-to-do-a-full-system-backup-using-clonezilla)
  
-# 1 What is Clonezilla
+## 1 What is Clonezilla
 Clonezilla is a user-freindly partition and disk imageing/cloning tool. It allows you to clone your entire system to another disk.<br><br>
 
-# 1.1 Why use Clonezilla
+### 1.1 Why use Clonezilla
 
 When you use Clonezilla to clone your disk (let's call it disk A) to another disk (let's call it disk B), B becomes an exact copy of A (same partitions and partition table, same UUIDs, same everything) which makes it useful for making backups or even using disk B on another machine with zero setup required (so effectively you can run your EXACT system on multiple machines)<br><br>
 
 This is different from disk copying which would require you to setup disk B by creating partitions and a partition table before copying the system which won't even boot before you modify it to use the new UUIDs of disk B.<br><br>
 
-# 1.2 Notes
+### 1.2 Notes
 
 - 1 Clonezilla uses partclone by default. However, for the filesystems that aren't supported by partclone Clonezilla uses dd.<br>
 - 2 BTRFS cloning is buggy in partclone and you will probably get erros. If that happens try forcing Clonezilla to use dd.
 <br><br>
 
-# 2 Installing Clonezilla live
+## 2 Installing Clonezilla live
 
 As the name suggests, Clonezilla **live** should be installed on a bootable USB to **live**-boot from.<br><br>
 > Note: at the time I am writing this, the latest version of clonezilla and the version I am using for this guide is 3.3.2-31
+<br>
 
-<br><br>
-
-# 2.1 Downloading and verifying the ISO file
+### 2.1 Downloading and verifying the ISO file
 
 First you download the ISO file from [here](https://sourceforge.net/projects/clonezilla/).<br>
 Also make sure to download the checksums and checksums.gpg files next to "stable - 3.3.2-31" [here](https://clonezilla.org/downloads.php) in order to verify your downloaded ISO.<br>
@@ -81,10 +76,10 @@ clonezilla-live-3.3.2-31-amd64.iso: OK
 If it doesn't output anything that means that the ISO file is corrupted or has been tampered with.<br>
 Delete the three files and redo the steps in this section.<br><br>
 
-# 2.2 Making a bootable USB
+### 2.2 Making a bootable USB
 You can use Etcher to flash the ISO file to the USB or better yet, you can use Ventoy, which I covered in another article in this wiki.
 
-# 3 How to do a full-system backup using clonezilla
+## 3 How to do a full-system backup using Clonezilla
 
 Shutdown your computer and boot Clonezilla from the bootable USB. First thing you'll see is this:<br>
 ![Clonezilla boot menu](../../imgs/clonezilla/bootmenu.png)
@@ -102,9 +97,6 @@ This guide will use the default layout (US keyboard)<br><br>
 Then you can choose whether to start clonezilla or enter the command line:
 ![start clonezilla](../../imgs/clonezilla/start-clonezilla.png)<br>
 Select Start_Clonezilla.<br>
-```
-Note: if the disk you intend to copy is encrypted, make sure to decrypt it via command line first
-```
 <br>
 
 Upon starting Clonezilla, you will be prompted to select the type of operation you want to perform.
