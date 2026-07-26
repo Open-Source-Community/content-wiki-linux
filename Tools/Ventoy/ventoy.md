@@ -45,7 +45,7 @@ Now it is time to actually install Ventoy. There are two alternative methods to 
 
 Start ventoygui from the command line (if you installed it via package manager) or execute the VentoyGUI.x86_64 file (if you downloaded and extracted the .tar.gz file from the download link).<br>
 You should see something like this:
-![Ventoy gui](../../imgs/ventoy/ventoygui.png)
+![Ventoy gui](imgs/ventoy/ventoygui.png)
 Insert your USB stick/drive, click the refresh icon, select your drive, click install and let it do its thing. If you encounter any erros you might want to try to run the Ventoy GUI as root
 
 ### 2.2Installing via CLI
