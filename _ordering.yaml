@@ -56,6 +56,10 @@ order:
       - file: "trafficlight-docker-challenge-solution"
 
 - folder: "Tools"
+  order:
+  - folder: "Ventoy"
+    order:
+      - file: "ventoy"
 
 - folder: "Common-issues--and--its-fixes"
 - file: "contrbuite.md"
