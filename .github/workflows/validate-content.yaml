@@ -294,7 +294,7 @@ jobs:
       # 5. Post PR comment with all errors
       # ─────────────────────────────────────────────
       - name: Post failure comment on PR
-        if: failure() && (github.event_name == 'pull_request_target' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
+        if: ${{ failure() && (github.event_name == 'pull_request_target' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) }}
         uses: actions/github-script@v7
         with:
           script: |
@@ -367,7 +367,7 @@ jobs:
       # 6. Update comment to green when all fixed
       # ─────────────────────────────────────────────
       - name: Post success comment on PR
-        if: success() && (github.event_name == 'pull_request_target' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
+        if: ${{ success() && (github.event_name == 'pull_request_target' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) }}
         uses: actions/github-script@v7
         with:
           script: |
