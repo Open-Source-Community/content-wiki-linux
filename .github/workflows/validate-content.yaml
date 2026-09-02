@@ -11,7 +11,9 @@ on:
   #     - "**.md"
 
 # Allow the action to post PR comments
+# issues: write required for github-script to create/update comments (403 otherwise)
 permissions:
+  issues: write
   pull-requests: write
   contents: read
 
@@ -93,6 +95,43 @@ jobs:
               for field in REQUIRED:
                   if field not in fm or not str(fm[field]).strip():
                       add("Frontmatter", filepath, 1, f"Missing required field `{field}`")
+              # ── Tags naming (CONTRIBUTING.md:154-167) ──
+              if "tags" in fm and fm["tags"] is not None:
+                  tags = fm["tags"]
+                  if not isinstance(tags, list):
+                      add("Frontmatter", filepath, 1, "`tags` must be a YAML list")
+                  else:
+                      for tag in tags:
+                          t = str(tag)
+                          if t != t.lower() or " " in t or "_" in t or t != t.strip():
+                              add("Frontmatter", filepath, 1, f"Tag `{t}` violates naming: lowercase + hyphen only (got `{t}`)")
+                          if not re.match(r'^[a-z0-9][a-z0-9-]*$', t):
+                              add("Frontmatter", filepath, 1, f"Tag `{t}` must match `^[a-z0-9][a-z0-9-]*$`")
+
+          # ── File & image naming (CONTRIBUTING.md:82-94, 290-303) ──
+          for filepath in files:
+              if not os.path.isfile(filepath):
+                  continue
+              basename = os.path.basename(filepath)
+              # allow index.md / README.md as special per CONTRIBUTING.md:180
+              if basename not in ("index.md", "README.md", "Readme.md"):
+                  if basename != basename.lower():
+                      add("Naming", filepath, 1, f"File name `{basename}` must be lowercase (quartz slug is case-sensitive)")
+                  if " " in basename or "_" in basename:
+                      add("Naming", filepath, 1, f"File name `{basename}` must use `-` not spaces/underscores")
+                  if not re.match(r'^[a-z0-9-]+\.md$', basename):
+                      # allow dot only before md, so catch parens etc like migrating_arch(legally).md
+                      add("Naming", filepath, 1, f"File name `{basename}` violates `lowercase-hyphen.md` pattern")
+              # folder path naming check (each segment) - CONTRIBUTING.md:82 lowercase hyphen
+              for part in os.path.dirname(filepath).split(os.sep):
+                  if not part or part in (".", ".."):
+                      continue
+                  if part != part.lower():
+                      add("Naming", filepath, 1, f"Folder `{part}` in path `{filepath}` must be lowercase (quartz slug is case-sensitive, see CONTRIBUTING.md:82)")
+                  if " " in part:
+                      add("Naming", filepath, 1, f"Folder `{part}` in path `{filepath}` must use `-` not spaces (see CONTRIBUTING.md:82)")
+                  if "_" in part:
+                      add("Naming", filepath, 1, f"Folder `{part}` in path `{filepath}` must use `-` not underscores (see CONTRIBUTING.md:82)")
 
           # ── Emoji / keycap sequences ─────────────
           KEYCAP = re.compile(r'[0-9#*]\uFE0F\u20E3')
@@ -104,7 +143,10 @@ jobs:
                       add("Emoji", filepath, lineno,
                           "Unsupported keycap emoji (e.g. 1️⃣) — breaks Quartz OG image generation. Replace with plain text or a supported emoji.")
 
-          # ── Broken internal links ────────────────
+          # ── Broken internal links + image existence ──
+          # Quartz renders markdown via Plugin.CrawlLinks + Plugin.Assets:
+          # - internal wikilinks / md links must resolve to a known slug
+          # - image/asset links (imgs/, .png/.jpg etc.) must exist on disk, not in slug set
           known = set()
           for f in all_md:
               slug = os.path.splitext(f)[0].lstrip("./")
@@ -113,24 +155,65 @@ jobs:
 
           WIKILINK = re.compile(r'\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]')
           MD_LINK  = re.compile(r'\[[^\]]*\]\((?!https?://)([^)#]+?)(?:#[^)]*)?\)')
+          # also catch <img src="..."> HTML tags used in some notes
+          IMG_SRC  = re.compile(r'<img[^>]+src=["\']([^"\']+)["\']', re.IGNORECASE)
+          IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".ico")
+
+          def is_asset_path(target: str) -> bool:
+              t = target.lower()
+              return t.startswith("imgs/") or t.startswith("./imgs/") or t.endswith(IMAGE_EXTS)
 
           for filepath in files:
               if not os.path.isfile(filepath):
                   continue
               for lineno, line in enumerate(open(filepath, encoding="utf-8"), 1):
-                  if line.strip().startswith("```") or line.strip().startswith("`"):
+                  if line.strip().startswith("```"):
                       continue
+                  # wikilinks
                   for m in WIKILINK.finditer(line):
                       target = os.path.splitext(m.group(1).strip())[0].lower()
                       if target not in known:
                           add("Links", filepath, lineno, f"Broken wikilink: `[[{m.group(1)}]]`")
+                  # markdown links / images - same regex captures both [text](url) and ![alt](url)
                   for m in MD_LINK.finditer(line):
-                      target = m.group(1).strip()
-                      if target.startswith("mailto:") or target.startswith("/"):
+                      raw_target = m.group(1).strip()
+                      if raw_target.startswith("mailto:") or raw_target.startswith("#"):
                           continue
-                      slug = os.path.splitext(target.lstrip("./"))[0].lower()
+                      # asset / image handling - check file existence on disk
+                      if is_asset_path(raw_target):
+                          # strip leading ./ and query/hash fragments
+                          asset_path = raw_target.split("#")[0].split("?")[0].lstrip("./")
+                          # resolve relative to repo root (CONTRIBUTING: path relative to repo root)
+                          # also try relative to the markdown file directory for robustness
+                          candidates = [
+                              asset_path,
+                              os.path.join(os.path.dirname(filepath), asset_path),
+                              os.path.join(os.path.dirname(filepath), os.path.basename(asset_path)),
+                          ]
+                          if not any(os.path.isfile(c) for c in candidates):
+                              add("Links", filepath, lineno, f"Missing image/asset: `({raw_target})` — file not found on disk")
+                          continue
+                      # skip absolute / external already filtered by regex, but keep /imgs?
+                      if raw_target.startswith("/"):
+                          # Quartz Plugin.Static copies assets preserving path; check without leading /
+                          if is_asset_path(raw_target.lstrip("/")):
+                              asset_path = raw_target.lstrip("/")
+                              if not os.path.isfile(asset_path):
+                                  add("Links", filepath, lineno, f"Missing image/asset: `({raw_target})` — file not found at `{asset_path}`")
+                              continue
+                          continue
+                      slug = os.path.splitext(raw_target.lstrip("./"))[0].lower()
                       if slug not in known:
-                          add("Links", filepath, lineno, f"Broken markdown link: `({m.group(1)})`")
+                          add("Links", filepath, lineno, f"Broken markdown link: `({raw_target})`")
+                  # HTML <img src>
+                  for m in IMG_SRC.finditer(line):
+                      raw_target = m.group(1).strip()
+                      if raw_target.startswith("http://") or raw_target.startswith("https://"):
+                          continue
+                      if is_asset_path(raw_target) or raw_target.startswith("imgs/"):
+                          asset_path = raw_target.split("#")[0].split("?")[0].lstrip("./").lstrip("/")
+                          if not os.path.isfile(asset_path):
+                              add("Links", filepath, lineno, f"Missing <img> asset: `{raw_target}` — file not found at `{asset_path}`")
 
           # ── Write report ─────────────────────────
           with open("/tmp/check_report.json", "w") as f:
@@ -216,6 +299,7 @@ jobs:
               "Emoji":         "🔣",
               "Links":         "🔗",
               "Markdown Lint": "📝",
+              "Naming":        "🏷️",
             };
 
             let body = `## ❌ Content Validation Failed\n\n`;

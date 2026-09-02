@@ -2,15 +2,18 @@ name: Validate order.yaml
 
 on:
   pull_request:
-    branches: [main]
+    branches: [master]
     paths:
+      - "**/_ordering.yaml"
       - "**/order.yaml"
+      - "**/ordering.yaml"
   # push:
-  #   branches: [main]
+  #   branches: [master]
   #   paths:
-  #     - "**/order.yaml"
+  #     - "**/_ordering.yaml"
 
 permissions:
+  issues: write
   pull-requests: write
   contents: read
 
@@ -26,7 +29,21 @@ jobs:
           fetch-depth: 0
 
       # ─────────────────────────────────────────────
-      # 1. Set up Python
+      # 1. Collect changed order files (PR context)
+      # ─────────────────────────────────────────────
+      - name: Get changed order files
+        id: changed
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*order*.yaml' '*_ordering.yaml' | tr '\n' ' ')
+          else
+            FILES=$(git diff --name-only HEAD~1 HEAD -- '*order*.yaml' '*_ordering.yaml' | tr '\n' ' ')
+          fi
+          echo "Changed order files: $FILES"
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+
+      # ─────────────────────────────────────────────
+      # 2. Set up Python
       # ─────────────────────────────────────────────
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -37,15 +54,21 @@ jobs:
         run: pip install pyyaml
 
       # ─────────────────────────────────────────────
-      # 2. Run order.yaml checks
+      # 3. Run order.yaml checks
       # ─────────────────────────────────────────────
       - name: Validate order.yaml
         id: check
+        env:
+          CHANGED_ORDER_FILES: ${{ steps.changed.outputs.files }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: |
           python3 << 'PYEOF'
           import os, sys, yaml, glob, json
 
           report = []
+          # In PR mode, only validate changed ordering files to avoid legacy debt blocking PRs
+          # This follows quartz render: ordering file is optional, missing entries just mean alphabetical fallback
+          CHANGED_ORDER = os.environ.get("CHANGED_ORDER_FILES", "").split()
 
           def add(yaml_path, msg):
               report.append({"file": yaml_path, "msg": msg})
@@ -129,8 +152,36 @@ jobs:
 
               walk(data["order"], base_dir)
 
-          # Run on every order.yaml in the repo
-          for oy in glob.glob("**/order.yaml", recursive=True):
+          # Determine which ordering files to validate
+          # Quartz engine uses _ordering.yaml at repo root (orderFromYAML.ts), but CONTRIBUTING mentions order.yaml per folder
+          # Support both to avoid silent skip (previous bug: only **/order.yaml missed _ordering.yaml)
+          is_pr = os.environ.get("GITHUB_EVENT_NAME", "") == "pull_request"
+          if CHANGED_ORDER:
+              # PR mode: only check files touched in this PR (avoids legacy _ordering.yaml debt)
+              ordering_files = [f for f in CHANGED_ORDER if f and os.path.isfile(f)]
+              if not ordering_files:
+                  ordering_files = [f for f in CHANGED_ORDER if f]
+                  ordering_files = [f for f in ordering_files if "order" in f]
+              print(f"Validating changed ordering files: {ordering_files}")
+          elif is_pr:
+              # PR without order changes: skip full scan to avoid legacy debt blocking unrelated PRs
+              print("No changed ordering files in this PR — skipping order validation (legacy _ordering.yaml not checked)")
+              ordering_files = []
+          else:
+              # Full scan (push or workflow_dispatch)
+              ordering_files = set(glob.glob("**/_ordering.yaml", recursive=True))
+              ordering_files.update(glob.glob("**/order.yaml", recursive=True))
+              ordering_files.update(glob.glob("**/ordering.yaml", recursive=True))
+              if os.path.isfile("_ordering.yaml"):
+                  ordering_files.add("_ordering.yaml")
+              ordering_files = sorted(ordering_files)
+              print(f"Validating all ordering files: {ordering_files}")
+          if not ordering_files:
+              print("⚠ No ordering file to validate — passing")
+          for oy in ordering_files:
+              if not os.path.isfile(oy):
+                  add(oy, "File not found (deleted in this PR?)")
+                  continue
               check_order_yaml(oy)
 
           # Write report

@@ -1,5 +1,5 @@
 order:
-- file: "index.md"
+- file: "index"
 
 - folder: "How-to-install"
   order:
@@ -58,8 +58,7 @@ order:
 - folder: "Tools"
 
 - folder: "Common-issues--and--its-fixes"
-- file: "contrbuite.md"
-- file: "manifesto.md"
+- file: "manifesto"
 
 folder_weights:
   "How-to-install": 1
