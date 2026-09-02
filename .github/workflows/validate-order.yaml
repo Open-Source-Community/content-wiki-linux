@@ -29,16 +29,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo (PR head)
+      - name: Checkout base
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+
+      - name: Checkout PR head (for pull_request_target)
+        if: github.event_name == 'pull_request_target'
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-head
+          git checkout pr-head
 
       - name: Fetch base branch for diff
         if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
-        run: git fetch origin ${{ github.base_ref }} --depth 1 || git fetch origin master --depth 1 || true
+        run: git fetch origin ${{ github.base_ref }} --depth 1 2>/dev/null || git fetch origin master --depth 1 || true
 
       # ─────────────────────────────────────────────
       # 1. Collect changed order files (PR context)
