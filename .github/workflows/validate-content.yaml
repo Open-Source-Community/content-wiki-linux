@@ -40,7 +40,7 @@ jobs:
 
       - name: Fetch base branch for diff
         if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
-        run: git fetch origin ${{ github.base_ref }} --depth 1 2>/dev/null || git fetch origin master --depth 1 || true
+        run: git fetch origin ${{ github.base_ref }} 2>/dev/null || git fetch origin master || true
 
       # ─────────────────────────────────────────────
       # 1. Collect changed markdown files
