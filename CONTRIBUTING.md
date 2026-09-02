@@ -47,24 +47,49 @@ Use a clear branch name that describes what you're adding, e.g. `add/docker-volu
 
 ## 2. Preview Locally with Quartz
 
-We use a custom version of Quartz to build and render this content. Before opening a PR, always preview your changes locally to make sure everything looks correct.
+We use a custom Quartz fork to build and render this content. Before opening a PR, always preview your changes locally to make sure everything looks correct.
 
-**Step 1 — Install our custom Quartz**
+**Quartz engine repo:** `Wiki-Linux` — our Quartz v4 fork (custom `quartz.config.ts`, `orderFromYAML` plugin, `oscgeeks.org` theme).
 
-Follow the setup instructions in our Quartz repository:
-👉 **[Link to your custom Quartz repo]** *(will be added)*
+- **HTTPS:** `https://github.com/Open-Source-Community/Wiki-Linux.git`
+- **SSH:** `git@github.com:Open-Source-Community/Wiki-Linux.git`
+
+**Step 1 — Clone and install Quartz**
+
+```bash
+git clone https://github.com/Open-Source-Community/Wiki-Linux.git
+cd Wiki-Linux
+npm ci            # requires node >=22, npm >=10.9
+```
+
+> The engine lives in `Wiki-Linux/`. This repo (`content-wiki-linux`) is **only** the `content/` folder for it (see `Wiki-Linux/.github/workflows/deploy.yml` — it clones this repo into `content/` on deploy).
 
 **Step 2 — Point Quartz at this content repo**
 
-Once Quartz is installed, update the `quartz.config.ts` to point to your local clone of this content repo, or place your content inside Quartz's `content/` folder as described in the Quartz setup guide.
+In `Wiki-Linux/`, replace its `content/` with a symlink to your local clone of **this** repo (do **not** `mkdir content` then `ln -s` — that nests `content/content-wiki-linux` and gives `404 /`):
+
+```bash
+# from Wiki-Linux/
+rm -rf content
+ln -s /absolute/path/to/content-wiki-linux content
+# verify
+ls content/_ordering.yaml content/index.md
+```
+
+Alternative: `git clone https://github.com/Open-Source-Community/content-wiki-linux.git content` inside `Wiki-Linux/`.
+
+No need to edit `quartz.config.ts` — `_ordering.yaml` is auto-loaded from `content/` via `ApplyOrdering` (`Wiki-Linux/quartz/plugins/transformers/orderFromYAML.ts`).
 
 **Step 3 — Run the local preview**
 
 ```bash
+# from Wiki-Linux/
 npx quartz build --serve
 ```
 
-Then open `http://localhost:8080` in your browser. Any changes you save will reload automatically.
+Then open `http://localhost:8080` in your browser. Any changes you save will reload automatically (`public/` gets 600+ files, 70+ md processed).
+
+Common gotcha: `Emitted 617 files` + `[404] /` = symlink was wrong. Fix with `rm -rf content && ln -s /absolute/path/to/content-wiki-linux content`.
 
 **Things to check before opening a PR:**
 
