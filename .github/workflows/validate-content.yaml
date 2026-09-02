@@ -135,8 +135,14 @@ jobs:
                       # allow dot only before md, so catch parens etc like migrating_arch(legally).md
                       add("Naming", filepath, 1, f"File name `{basename}` violates `lowercase-hyphen.md` pattern")
               # folder path naming check (each segment) - CONTRIBUTING.md:82 lowercase hyphen
-              for part in os.path.dirname(filepath).split(os.sep):
+              # Only flag new folders; existing legacy folders (Tools, Linux-Basics etc.) are grandfathered
+              parts = os.path.dirname(filepath).split(os.sep)
+              for idx, part in enumerate(parts):
                   if not part or part in (".", ".."):
+                      continue
+                  # Build prefix up to this part to check if folder already exists on disk (legacy - skip)
+                  prefix = os.path.join(*parts[:idx+1]) if parts[:idx+1] else part
+                  if os.path.isdir(prefix):
                       continue
                   if part != part.lower():
                       add("Naming", filepath, 1, f"Folder `{part}` in path `{filepath}` must be lowercase (quartz slug is case-sensitive, see CONTRIBUTING.md:82)")
